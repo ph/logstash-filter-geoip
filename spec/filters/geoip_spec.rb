@@ -112,6 +112,7 @@ describe LogStash::Filters::GeoIP do
       let(:plugin) { LogStash::Filters::GeoIP.new("source" => "message", "fields" => ["country_name", "location", "longitude"]) }
 
       before do
+        # Should default to the null metric
         plugin.register
         plugin.filter(event)
       end
@@ -161,7 +162,11 @@ describe LogStash::Filters::GeoIP do
       let(:event) { LogStash::Event.new("message" => ipstring) }
 
       before do
-        plugin.register
+        begin
+          plugin.register
+        rescue
+          require "pry";binding.pry
+        end
         plugin.filter(event)
       end
 
@@ -188,7 +193,7 @@ describe LogStash::Filters::GeoIP do
       end
       
       context "when a IP is not found in the DB" do
-        let(:ipstring) { "113.208.89.21" }
+        let(:ipstring) { "192.168.1.20" }
 
         it "should set the target field to an empty hash" do
           expect(event.get("geoip")).to eq({})
